@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	
+	<script>
+	/*
+	第一版：定义个复数类，并实现复数的加、乘(r*r-i*i,r*i+i*r)、magnitude(复数点和(0,0)的距离)、负数、toString
+	第二版：再预定义一些对复数运算有帮助的类字段(常量):(0,0)、(1,0)、(0,1);改进equal方法;实现将
+	toString得到格式的字符串转码为Complex对象，或者格式不对的就抛出异常。使用正则表达式
+	*/
+		function Complex(real,imaginary) {
+			this.r = real;
+			this.i = imaginary;
+		}
+		Complex.ZERO = new Complex(0,0);
+		Complex.ONE = new Complex(1,0);
+		Complex.I = new Complex(0,1);
+		//类的实例方法必须使用this来获取实例的字段，而且是类名.方法，所以传参不能像下面一样
+		Complex.prototype = {
+			/*add:function (x,y){
+				return new Complex(x.r+y.r,x.i+y.i);
+			},
+			mul:function (x,y) {
+				return new Complex(x.r*y.r-x.i*y.i,x.r*y.i+x.i*y.r);
+			},
+			mag:function (x) {
+				return Math.sqrt(x.r*x.r+x.i*x.i);
+			},
+			neg:function (x) {
+				return new complex(-x.r,-x.i);
+			},
+			toString:function (x) {
+				return "{"+x.r+","+x.i+"}";
+			},
+			equal:function (x,y) {
+				if(x.r===y.r&&x.i===y.i)
+					return true;
+				return false;
+			}*/
+			add:function (y){
+				return new Complex(this.r+y.r,this.i+y.i);
+			},
+			mul:function (y) {
+				return new Complex(this.r*y.r-this.i*y.i,this.r*y.i+this.i*y.r);
+			},
+			mag:function () {
+				return Math.sqrt(this.r*this.r+this.i*this.i);
+			},
+			neg:function () {
+				return new Complex(-this.r,-this.i);
+			},
+			toString:function () {
+				return "{"+this.r+","+this.i+"}";
+			},
+			equal:function (y) {
+				//y.constructor===Object成立???????
+				if(y!=null&&this.r===y.r&&this.i===y.i/*&&y.constructor===Complex*/)
+					return true;
+				return false;
+			}
+		}
+		Complex.parse = function (s) {
+			//首先使用正则表达式判断s是不是{r,i}形式的
+			var reg = /^\{([^,]+),([^}]+)\}$/;
+			var result = s.match(reg);
+			if(result != null)
+				return new Complex(result[1],result[2]);
+		}
+		var x = new Complex(1,2);
+		var y = new Complex(1,2);
+		console.log(Complex.parse(x.neg().toString()));
+		/*console.log(x.add(y).toString());
+		console.log(x.mul(y).toString());
+		console.log(x.mag());
+		console.log(x.equal(y));
+		console.log(x.constructor===Object);*/
+
+	</script>
+</body>
+</html>

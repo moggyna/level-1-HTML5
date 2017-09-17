@@ -1,0 +1,417 @@
+<!-- 
+输入一个贷款总金额、年利率、贷款时间，计算出每个月要还多少钱、一共要还多少钱、一共付了多少利息；
+还要画一张图来显示loan balance(贷款余额)、Cumulative Equity(真正属于价款人的资产)、Interest Payments(所付利息)随时间变化的情况。
+还有一个输入邮政编码来跨域请求资助人的功能。
+html、css
+两栏布局
+左边栏：上中下布局。上面放一个form表单；中间是一个按钮；下面放一个显示组，使用span
+右边栏：使用canvas绘图
+js
+每月还钱数=((1+月利率)^(月份数)) * 总借钱数 * 月利率 / ((1+月利率)^(月份数)-1)
+总还钱数=每月*总月份
+总利息=总还钱数-借钱数
+************学习源码的方式**************
+html
+1.使用table布局，分行分列，这样能少写样式
+ -->
+<!-- 第一版：自己实现的没有画图和没有从服务端加载数据的贷款计算 -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Data</title>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <table class="left-table">
+        <tr>
+            <td><strong>Enter Loan Data:</strong></td>
+        </tr>
+        <tr>
+            <td>Amount of the loan ($):</td>
+            <td>
+                <input type="text">
+            </td>
+        </tr>
+        <tr>
+            <td>Annual interest (%):</td>
+            <td>
+                <input type="text">
+            </td>
+        </tr>
+        <tr>
+            <td>Repayment period (years):</td>
+            <td>
+                <input type="text">
+            </td>
+        </tr>
+        <tr>
+            <td>Zipcode (to find lenders):</td>
+            <td>
+                <input type="text">
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Approximate Payments:</strong></td>
+            <td>
+                <button>Calculate</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Monthly payment:</td>
+            <td><strong id="MonthlyPayment"></strong></td>
+        </tr>
+        <tr>
+            <td>Total payment:</td>
+            <td><strong id="TotalPayment"></strong></td>
+        </tr>
+        <tr>
+            <td>Total interest:</td>
+            <td><strong id="TotalInterest"></strong></td>
+        </tr>
+        <tr>
+            <td><strong>Sponsors:</strong> </td>
+            <td id="Sponsors"></td>
+        </tr>
+    </table>
+    <script>
+    var oInput = document.getElementsByTagName('input');
+    var oBtn = document.getElementsByTagName('button');
+    oBtn[0].addEventListener('click', function() {
+
+        var amount = parseFloat(oInput[0].value);
+        var interest = parseFloat(oInput[1].value) / 100 / 12;
+        var years = parseFloat(oInput[2].value);
+        var zipcode = parseFloat(oInput[3].value);
+
+        /*考虑容错性
+        1.输入值必须是数值，否则提示输入有误
+        2.输入值不能是负值
+
+        */
+        if (!amount || !interest || !years||amount<0||interest<0||years<0)
+            alert("输入有误！");
+        else {
+            var x = Math.pow(1 + interest, years * 12);
+            var monthly = (x * amount * interest) / (x - 1);
+            var totalPayment = monthly * years * 12;
+            var totalInterest = totalPayment - amount;
+
+            var oMonthlyPayment = document.getElementById('MonthlyPayment');
+            var oTotalInterest = document.getElementById('TotalInterest');
+            var oTotalPayment = document.getElementById('TotalPayment');
+
+            oMonthlyPayment.innerHTML = '$' + monthly.toFixed(2);
+            oTotalPayment.innerHTML = '$' + totalPayment.toFixed(2);
+            oTotalInterest.innerHTML = '$' + totalInterest.toFixed(2);
+        }
+    });
+    </script>
+</body>
+</html> -->
+<!-- 第二版，看源码，对第一版进行改进 -->
+<!-- 
+1.标题的加粗使用<th></th>而不是<strong></strong>更具语义性
+2.整体是一个table布局，而不是分左右两栏，table布局对样式的设置更简单.图片放在第三列，占据8行
+3.添加功能：如果输入有误，弹出提示后清空显示在下方的数据
+4.使用浏览器存储localStorage来存放用户输入的数据，使之刷新页面也能存在
+5.为每个input框添加监听事件，改变了值就试图计算并存值到浏览器存储中，而不是只有点击计算按钮以后才能存值，不然用户的输入值在不小心刷新页面的情况下就会丢失。那么相应也要添加载入页面的时候就载入值的操作。点击按钮可以直接在button中指定onclick=“calculate();”
+ -->
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Data</title>
+    <style>
+    #graph {
+        width: 400px;
+        height: 250px;
+        border: 1px solid black;
+    }
+    </style>
+</head>
+
+<body>
+    <table class="left-table">
+        <tr>
+            <th>Enter Loan Data:</th>
+            <td></td>
+            <th>Loan Balance, Cumulative Equity, and Interest Payments</th>
+        </tr>
+        <tr>
+            <td>Amount of the loan ($):</td>
+            <td>
+                <input type="text" onchange="calculate();">
+            </td>
+            <td rowspan="8">
+                <canvas id="graph"></canvas>
+            </td>
+        </tr>
+        <tr>
+            <td>Annual interest (%):</td>
+            <td>
+                <input type="text" onchange="calculate();">
+            </td>
+        </tr>
+        <tr>
+            <td>Repayment period (years):</td>
+            <td>
+                <input type="text" onchange="calculate();">
+            </td>
+        </tr>
+        <tr>
+            <td>Zipcode (to find lenders):</td>
+            <td>
+                <input type="text">
+            </td>
+        </tr>
+        <tr>
+            <th>Approximate Payments:</th>
+            <td>
+                <button onclick="calculate();">Calculate</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Monthly payment:</td>
+            <td>$<strong id="MonthlyPayment"></strong></td>
+        </tr>
+        <tr>
+            <td>Total payment:</td>
+            <td>$<strong id="TotalPayment"></strong></td>
+        </tr>
+        <tr>
+            <td>Total interest:</td>
+            <td>$<strong id="TotalInterest"></strong></td>
+        </tr>
+        <tr>
+            <th>Sponsors:</th>
+            <td id="Sponsors"></td>
+        </tr>
+    </table>
+    <script>
+    var oInput = document.getElementsByTagName('input');
+    var oBtn = document.getElementsByTagName('button');
+    var oMonthlyPayment = document.getElementById('MonthlyPayment');
+    var oTotalInterest = document.getElementById('TotalInterest');
+    var oTotalPayment = document.getElementById('TotalPayment');
+
+    function calculate() {
+
+        var amount = parseFloat(oInput[0].value);
+        var interest = parseFloat(oInput[1].value) / 100 / 12;
+        var years = parseFloat(oInput[2].value);
+        var zipcode = parseFloat(oInput[3].value);
+
+        var x = Math.pow(1 + interest, years * 12);
+        var monthly = (x * amount * interest) / (x - 1);
+        var totalPayment = monthly * years * 12;
+        var totalInterest = totalPayment - amount;
+        /*考虑容错性
+        1.输入值必须是数值，否则提示输入有误
+        2.输入值不能是负值
+        */
+        if (isFinite(monthly)) {
+            oMonthlyPayment.innerHTML = monthly.toFixed(2);
+            oTotalPayment.innerHTML = totalPayment.toFixed(2);
+            oTotalInterest.innerHTML = totalInterest.toFixed(2);
+
+            save(oInput[0].value, oInput[1].value, oInput[2].value);
+        } else {
+            oMonthlyPayment.innerHTML = '';
+            oTotalPayment.innerHTML = '';
+            oTotalInterest.innerHTML = '';
+
+
+        }
+    }
+
+    function save(a, b, c) {
+        if (window.localStorage) {
+            localStorage.setItem('amount', a);
+            localStorage.setItem('interest', b);
+            localStorage.setItem('years', c);
+        }
+
+    }
+
+    window.onload = function() {
+        if (window.localStorage && window.localStorage.getItem('amount')) {
+            var oInput = document.getElementsByTagName('input');
+            oInput[0].value = localStorage.getItem('amount');
+            oInput[1].value = localStorage.getItem('interest');
+            oInput[2].value = localStorage.getItem('years');
+        }
+
+    }
+    </script>
+</body>
+
+</html> -->
+<!-- 第三版：使用ajax来得到信息+canvas画图先放着吧 -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Data</title>
+    <style>
+    #graph {
+        width: 400px;
+        height: 250px;
+        border: 1px solid black;
+    }
+    #sponsors{
+    	width: 400px;
+        height: 250px;
+    	 border: 1px solid black;
+    }
+    </style>
+</head>
+
+<body>
+    <table class="left-table">
+        <tr>
+            <th>Enter Loan Data:</th>
+            <td></td>
+            <th>Loan Balance, Cumulative Equity, and Interest Payments</th>
+        </tr>
+        <tr>
+            <td>Amount of the loan ($):</td>
+            <td>
+                <input type="text" onchange="calculate();">
+            </td>
+            <td rowspan="8">
+                <canvas id="graph"></canvas>
+            </td>
+        </tr>
+        <tr>
+            <td>Annual interest (%):</td>
+            <td>
+                <input type="text" onchange="calculate();">
+            </td>
+        </tr>
+        <tr>
+            <td>Repayment period (years):</td>
+            <td>
+                <input type="text" onchange="calculate();">
+            </td>
+        </tr>
+        <tr>
+            <td>Zipcode (to find lenders):</td>
+            <td>
+                <input type="text">
+            </td>
+        </tr>
+        <tr>
+            <th>Approximate Payments:</th>
+            <td>
+                <button onclick="calculate();">Calculate</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Monthly payment:</td>
+            <td>$<strong id="MonthlyPayment"></strong></td>
+        </tr>
+        <tr>
+            <td>Total payment:</td>
+            <td>$<strong id="TotalPayment"></strong></td>
+        </tr>
+        <tr>
+            <td>Total interest:</td>
+            <td>$<strong id="TotalInterest"></strong></td>
+        </tr>
+        <tr>
+            <th>Sponsors:</th>
+            <td><div id="lenders"></div></td>
+            
+        </tr>
+    </table>
+    <script>
+    var oInput = document.getElementsByTagName('input');
+    var oBtn = document.getElementsByTagName('button');
+    var oMonthlyPayment = document.getElementById('MonthlyPayment');
+    var oTotalInterest = document.getElementById('TotalInterest');
+    var oTotalPayment = document.getElementById('TotalPayment');
+
+    function calculate() {
+
+        var amount = parseFloat(oInput[0].value);
+        var interest = parseFloat(oInput[1].value) / 100 / 12;
+        var years = parseFloat(oInput[2].value);
+        var zipcode = oInput[3].value;
+
+        var x = Math.pow(1 + interest, years * 12);
+        var monthly = (x * amount * interest) / (x - 1);
+        var totalPayment = monthly * years * 12;
+        var totalInterest = totalPayment - amount;
+        /*考虑容错性
+        1.输入值必须是数值，否则提示输入有误
+        2.输入值不能是负值
+        */
+        if (isFinite(monthly)) {
+            oMonthlyPayment.innerHTML = monthly.toFixed(2);
+            oTotalPayment.innerHTML = totalPayment.toFixed(2);
+            oTotalInterest.innerHTML = totalInterest.toFixed(2);
+
+            save(oInput[0].value, oInput[1].value, oInput[2].value);
+
+            getLenders(amount,years,zipcode);
+        } else {
+            oMonthlyPayment.innerHTML = '';
+            oTotalPayment.innerHTML = '';
+            oTotalInterest.innerHTML = '';
+
+
+        }
+    }
+
+    function save(a, b, c) {
+        if (window.localStorage) {
+            localStorage.setItem('amount', a);
+            localStorage.setItem('interest', b);
+            localStorage.setItem('years', c);
+        }
+
+    }
+
+    window.onload = function() {
+        if (window.localStorage && window.localStorage.getItem('amount')) {
+            var oInput = document.getElementsByTagName('input');
+            oInput[0].value = localStorage.getItem('amount');
+            oInput[1].value = localStorage.getItem('interest');
+            oInput[2].value = localStorage.getItem('years');
+        }
+
+    }
+    /*先提交邮编到服务器查询那个邮编下的所有资助人的信息，然后服务器传回数据，最后渲染*/
+    function getLenders(amount,years,zipcode) {
+    	if(!window.new XMLHttpRequest) return;
+    	var ad = document.getElementById('lenders');
+    	if(!ad) return;
+    	var xhr = new new XMLHttpRequest();
+    	var url = "getLenders.php"+"?amt="+encodeURIComponent(amount)+"&yrs="+encodeURIComponent(years)+"&zip="+encodeURIComponent(zipcode);
+    	xhr.open('get', url, ture);
+    	xhr.onreadystatechange = function () {
+    		if(xhr.readyState == 4)
+    			if(xhr.status == 200){
+    				/*php中如何设置responseText？*/
+    				var response = responseText;
+    				var lenders = JSON.parse(response);
+    				var list = '';
+    				for (var i = 0; i < lenders.length; i++) {
+    					list += "<li><a href='"+ lenders[i].url+"'>"+lenders[i].name+"</a></li>";
+    				}
+    				ad.innerHTML = "<ul>"+list+"</ul>";
+    			}
+    	}
+    	xhr.send(null);
+    }
+    </script>
+</body>
+
+</html>

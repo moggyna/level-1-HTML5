@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+</head>
+<body>
+	<script>
+	/*
+	使用对象{name:"mozilla",version:"1.9.2"}来输出浏览器的内核和版本
+	tips：
+	Safari、Chrome:版本号是Webkit的版本号；输出"webkit"
+	Opera：版本号是软件的版本号；输出"opera"
+	FireFox、其他基于gecko内核的浏览器：版本号是Gecko的版本号；输出"mozilla"
+	IE:软件的版本号；输出"msie"
+	*/
+	var browser = (function () {
+		var s = navigator.userAgent.toLowerCase();
+		var match = //.exec(s)||//.exec(s)||[];
+		return {name:match[1]||"",version:match[2]||"0"};
+	}());
+	</script>
+</body>
+</html>

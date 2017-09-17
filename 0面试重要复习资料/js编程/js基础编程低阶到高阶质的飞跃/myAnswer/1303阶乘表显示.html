@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Table of Factorials</h1>
+    <table>
+        <thead>
+            <tr>
+                <th><strong>n</strong></th>
+                <th><strong>n!</strong></th>
+            </tr>
+        </thead>
+        <tbody>
+        	    	
+        </tbody>
+    </table>
+    <script>
+    	var arr = [1];
+    	for (var i = 1; i <= 10; i++) {
+    		arr.push(arr[i-1]*i);
+    	}
+    	var tbody = document.getElementsByTagName('tbody');
+    	var str = '';
+    	for (var i = 1; i < arr.length; i++) {
+    		str += '<tr><td>'+i+'</td><td>'+arr[i]+'</td></tr>' ;
+    	}
+    	tbody[0].innerHTML = str;
+    </script>
+</body>
+
+</html>

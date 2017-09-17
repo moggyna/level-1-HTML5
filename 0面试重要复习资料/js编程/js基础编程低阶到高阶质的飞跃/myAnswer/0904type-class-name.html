@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+    /*实现一个type()识别o的类型
+    	null返回"null"；
+    	NaN返回"nan";
+    	typeof返回值不为"object"返回这个值；
+    	注意有一些正则表达式被识别为函数；
+    	如果o的类不是"Object"返回这个值；
+    	如果o包含构造函数并且这个构造函数具有名称，则返回这个名称；
+    	否则一律返回"Object"
+    	*/
+    function type(o) {
+        if (o === null) { //null
+            return 'null';
+        } else if (o !== o) { //NaN
+            //上面不能使用isNaN(o)去判断，因为对于对象，也有isNaN(o)是true，但是这里的本意是检测NaN
+            return 'nan';
+        } else if (typeof(o) != 'object') { //undefined\string\number\boolean\function\symbol
+            return typeof(o);
+        } else if (classof(o) !== 'Object') { //Array\Boolean\String\Number\Function
+            console.log('class');
+            return classof(o);
+        } else if (o.constructor && typeof(o.constructor) === 'function') { //自定义函数名
+            console.log('自定义函数名');
+            return o.constructor.getName();
+        } else {
+            console.log('最后的去路')
+            return "Object";
+        }
+    }
+
+    function classof(o) {
+        return Object.prototype.toString.call(o).slice(8, -1);
+    }
+    Function.prototype.getName = function() {
+        if ('name' in this) return this.name;
+        return this.toString().match(/function\s*([^(]*)\(/)[1];
+    }
+    var reg = /[12]/;
+    var str = new String('123');
+
+    function Fun(q) {
+        this.q = q;
+    }
+    var q = new Fun(8);
+    //console.log(q);
+    //console.log(type(reg));
+    //console.log(type(3));
+    //console.log(type(str));
+    console.log(type(q));
+
+    function dedupe(array) {
+        return Array.from(new Set(array));
+    }
+    var a = dedupe([1, 1, 2, 3]); //[1,2,3]
+    console.log(type(a));
+    </script>
+</body>
+
+</html>

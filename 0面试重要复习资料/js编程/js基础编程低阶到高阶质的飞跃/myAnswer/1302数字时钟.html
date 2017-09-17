@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <span>数字时钟</span>
+    <div id="clock"></div>
+    <script>
+    function display() {
+        var clock = document.getElementById('clock');
+        var now = new Date();
+        clock.innerHTML = now.toLocaleTimeString();
+        setTimeout(display, 1000);
+    }
+    display();
+    </script>
+</body>
+
+</html>

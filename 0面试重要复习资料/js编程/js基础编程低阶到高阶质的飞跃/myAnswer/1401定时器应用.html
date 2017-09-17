@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script>
+	/*
+	定义一个函数invoke指定函数f()在未来的调用模式，参数为interval、start、end、f()
+	在等待了若干秒以后开始调用f()
+	如果设置了interval，并没有设置end参数，则对f()调用将不会停止
+	如果没有设置interval和end，只在若干毫秒后调用f()一次
+	只有指定了f(),才会从start=0的时刻开始
+	调用invoke()并不会阻塞，它会立即返回
+	*/
+	function invoke (f,start,interval,end,) {
+		//传入参数存在arguments中，不传参、传1个参、传2个参、3个参、4个参
+		if(!start) start = 0;//只传了f，就要设置start=0
+		if(arguments.length == 2) 
+			setTimeout(f,start);//只传了f和start
+		if(interval) 
+			if()
+			setInterval(f, ) 
+	}
+	</script>
+</body>
+</html>

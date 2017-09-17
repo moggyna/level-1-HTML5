@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script>
+	/*
+	集合是一种数据结构，用以表示非重复值的无序集合。集合的基础方法包括添加值、检测值是否在集合中。
+	实现一个更通用的set类，实现从js值到唯一字符串的映射，然后用字符串用作属性名。
+	*/
+	function Set() {
+		this.values = {};
+		this.n = 0;
+		this.add.apply(this,arguments);
+	}
+	Set.prototype.add = function{
+		for (var i = 0; i < arguments.length; i++) {
+			var val = arguments[i];
+			var str = Set._v2s(val);
+			if(!this.values.hasOwnProperty(str)){
+				this.values[str] = val;
+				this.n++;
+			}
+		}
+		return this;
+	};
+	</script>
+</body>
+</html>
